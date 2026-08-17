@@ -1,4 +1,4 @@
-# Builds the static stakeholder showcase and deploys it through GitHub Pages.
+# Builds the static stakeholder demo and deploys it through GitHub Pages.
 name: Deploy Dental Evidence Chat to Pages
 
 on:

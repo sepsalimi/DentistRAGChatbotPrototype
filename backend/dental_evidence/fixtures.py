@@ -20,7 +20,7 @@ OTHER_TENANT_ID = "tenant-river-dental"
 
 
 def build_users() -> list[User]:
-    """Create two showcase personas plus a tenant-isolation identity."""
+    """Create all staff roles, sample users, and a tenant-isolation user."""
 
     return [
         User(
@@ -35,6 +35,24 @@ def build_users() -> list[User]:
             tenant_id=DEMO_TENANT_ID,
             display_name="Jordan Lee",
             persona=PersonaKind.FRONT_DESK,
+        ),
+        User(
+            id="user-student",
+            tenant_id=DEMO_TENANT_ID,
+            display_name="Taylor Kim",
+            persona=PersonaKind.STUDENT,
+        ),
+        User(
+            id="user-hygienist",
+            tenant_id=DEMO_TENANT_ID,
+            display_name="Riley Shah",
+            persona=PersonaKind.HYGIENIST,
+        ),
+        User(
+            id="user-reception",
+            tenant_id=DEMO_TENANT_ID,
+            display_name="Casey Morgan",
+            persona=PersonaKind.RECEPTION,
         ),
         User(
             id="user-other-dentist",

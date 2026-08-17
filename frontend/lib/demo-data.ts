@@ -1,4 +1,4 @@
-// Supplies deterministic answers and all five source-access scenarios for the showcase.
+// Supplies broad deterministic dental answers, source registry fixtures, and access metadata.
 import type {
   AuditEvent,
   Connector,
@@ -9,50 +9,57 @@ import type {
   SourceAccess,
 } from "./types";
 
-const access = {
-  public: {
-    scenario: "public",
-    retrieved: true,
-    preview: "full",
-    original: "open",
-    entitlement: "not-required",
-  },
-  licensedPreview: {
-    scenario: "licensed-preview",
-    retrieved: true,
-    preview: "watermarked",
-    original: "blocked-license",
-    entitlement: "not-required",
-  },
-  citationOnly: {
-    scenario: "citation-only",
-    retrieved: true,
-    preview: "metadata-only",
-    original: "hidden",
-    entitlement: "not-applicable",
-  },
-  entitled: {
-    scenario: "entitled",
-    retrieved: true,
-    preview: "full",
-    original: "open",
-    entitlement: "entitled",
-  },
-  locked: {
-    scenario: "entitled",
-    retrieved: false,
-    preview: "none",
-    original: "blocked-entitlement",
-    entitlement: "not-entitled",
-  },
-  excluded: {
-    scenario: "excluded",
-    retrieved: false,
-    preview: "none",
-    original: "hidden",
-    entitlement: "not-applicable",
-  },
-} satisfies Record<string, SourceAccess>;
+const roles: Persona[] = ["student", "dentist", "hygienist", "reception"];
+
+const publicAccess: SourceAccess = {
+  scenario: "public",
+  retrieved: true,
+  preview: "full",
+  original: "open",
+  entitlement: "not-required",
+};
+const licensedAccess: SourceAccess = {
+  scenario: "licensed-preview",
+  retrieved: true,
+  preview: "watermarked",
+  original: "blocked-license",
+  entitlement: "not-required",
+};
+const citationOnlyAccess: SourceAccess = {
+  scenario: "citation-only",
+  retrieved: true,
+  preview: "metadata-only",
+  original: "hidden",
+  entitlement: "not-applicable",
+};
+const entitledAccess: SourceAccess = {
+  scenario: "entitled",
+  retrieved: true,
+  preview: "full",
+  original: "open",
+  entitlement: "entitled",
+};
+const lockedAccess: SourceAccess = {
+  scenario: "entitled",
+  retrieved: false,
+  preview: "none",
+  original: "blocked-entitlement",
+  entitlement: "not-entitled",
+};
+const excludedAccess: SourceAccess = {
+  scenario: "excluded",
+  retrieved: false,
+  preview: "none",
+  original: "hidden",
+  entitlement: "not-applicable",
+};
+
+const allRoles = (policy: SourceAccess): Record<Persona, SourceAccess> => ({
+  student: policy,
+  dentist: policy,
+  hygienist: policy,
+  reception: policy,
+});
 
 export const patient: PatientContext = {
   id: "PT-1042",
@@ -67,199 +74,423 @@ export const patient: PatientContext = {
 
 export const sources: EvidenceSource[] = [
   {
-    id: "ada-periodontal",
-    title: "ADA Clinical Practice Guideline: Nonsurgical Periodontal Treatment",
-    origin: "SharePoint",
+    id: "iadt-trauma",
+    title: "International Association of Dental Traumatology Guidelines: Avulsion",
+    origin: "Publisher website",
     kind: "Clinical guideline",
-    updatedAt: "May 14, 2025",
-    recency: "15 months old",
-    access: { dentist: access.public, frontDesk: access.public },
-    originalUrl: "https://www.ada.org/resources/ada-library/oral-health-topics/periodontitis",
-    excerpt: "For adults with periodontitis, scaling and root planing is recommended as the initial nonsurgical treatment. Re-evaluate periodontal response after the healing interval and reinforce home care.",
-    section: "Recommendations 2–3",
-    tags: ["Periodontics", "ADA", "Clinical"],
+    publisher: "International Association of Dental Traumatology",
+    authors: ["Fouad AF", "Abbott PV", "Tsilingaridis G", "et al."],
+    edition: "2020 guideline update",
+    publicationDate: "2020-05-27",
+    identifier: "DOI 10.1111/edt.12573",
+    jurisdiction: "International",
+    updatedAt: "May 27, 2020",
+    recency: "Current published edition",
+    access: allRoles(publicAccess),
+    currentAccess: publicAccess,
+    originalUrl: "https://onlinelibrary.wiley.com/doi/10.1111/edt.12573",
+    excerpt: "A primary tooth should not be replanted. Management focuses on the child, the permanent successor, and prompt clinical assessment.",
+    fullText: "Avulsion is one of the most serious dental injuries. Immediate management depends on whether the avulsed tooth is primary or permanent.\n\nA primary tooth should not be replanted. Management focuses on the child, the permanent successor, and prompt clinical assessment. Provide age-appropriate instructions and monitor healing.\n\nFor a permanent tooth, immediate replantation at the site of the accident is the best treatment when feasible. If this cannot be done, use an appropriate storage medium and arrange urgent dental care.",
+    exactPassage: "A primary tooth should not be replanted. Management focuses on the child, the permanent successor, and prompt clinical assessment.",
+    section: "2.1 Avulsed primary teeth",
+    page: "Page 337",
+    tags: ["Trauma", "Pediatric dentistry", "Guideline"],
+    rights: {
+      holder: "John Wiley & Sons and IADT",
+      license: "Publisher terms; citation and external linking",
+      allowedUse: "Indexed metadata and attributed passage preview",
+      hosting: "publisher-link",
+      retention: "Metadata retained; preview refreshed annually",
+    },
+    registry: {
+      status: "ready",
+      owner: "Clinical knowledge team",
+      lastSync: "August 12, 2026",
+      recordCount: "1 document · 42 passages",
+    },
+  },
+  {
+    id: "ada-prophylaxis",
+    title: "Antibiotic Prophylaxis Prior to Dental Procedures",
+    origin: "ADA.org",
+    kind: "Clinical topic",
+    publisher: "American Dental Association",
+    authors: ["ADA Council on Scientific Affairs"],
+    edition: "Living topic page",
+    publicationDate: "2025-01-15",
+    identifier: "ADA-ORAL-HEALTH-AP-2025",
+    jurisdiction: "United States",
+    updatedAt: "January 15, 2025",
+    recency: "Updated 19 months ago",
+    access: allRoles(publicAccess),
+    currentAccess: publicAccess,
+    originalUrl: "https://www.ada.org/resources/ada-library/oral-health-topics/antibiotic-prophylaxis",
+    excerpt: "For infective endocarditis prevention, prophylaxis is reasonable only for patients with the highest-risk cardiac conditions undergoing procedures that manipulate gingival tissue or the periapical region.",
+    fullText: "Clinical recommendations should be applied after reviewing the current medical history and the planned dental procedure.\n\nFor infective endocarditis prevention, prophylaxis is reasonable only for patients with the highest-risk cardiac conditions undergoing procedures that manipulate gingival tissue or the periapical region.\n\nRoutine prophylaxis is not recommended solely because a patient has a prosthetic joint. Consultation may be appropriate when the clinical situation is unclear.",
+    exactPassage: "For infective endocarditis prevention, prophylaxis is reasonable only for patients with the highest-risk cardiac conditions undergoing procedures that manipulate gingival tissue or the periapical region.",
+    section: "Infective endocarditis",
+    page: "Web section 3",
+    tags: ["Antibiotics", "Cardiology", "Stewardship"],
+    rights: {
+      holder: "American Dental Association",
+      license: "Public web access",
+      allowedUse: "Search, quotation, citation, and external open",
+      hosting: "publisher-link",
+      retention: "Metadata and passage cache reviewed quarterly",
+    },
+    registry: {
+      status: "ready",
+      owner: "Clinical knowledge team",
+      lastSync: "Today, 8:35 AM",
+      recordCount: "1 page · 18 passages",
+    },
+  },
+  {
+    id: "aapd-fluoride",
+    title: "Fluoride Therapy: Best Practices",
+    origin: "AAPD Reference Manual",
+    kind: "Best practice",
+    publisher: "American Academy of Pediatric Dentistry",
+    authors: ["Council on Clinical Affairs"],
+    edition: "2025–2026 Reference Manual",
+    publicationDate: "2025-09-01",
+    identifier: "AAPD-BP-FLUORIDE-25",
+    jurisdiction: "United States",
+    updatedAt: "September 1, 2025",
+    recency: "Current manual",
+    access: allRoles(publicAccess),
+    currentAccess: publicAccess,
+    originalUrl: "https://www.aapd.org/research/oral-health-policies--recommendations/fluoride-therapy/",
+    excerpt: "Professionally applied fluoride treatment should be based on caries-risk assessment, with higher-risk children receiving fluoride varnish at appropriate recall intervals.",
+    fullText: "Fluoride is effective in preventing and controlling dental caries when used appropriately.\n\nProfessionally applied fluoride treatment should be based on caries-risk assessment, with higher-risk children receiving fluoride varnish at appropriate recall intervals.\n\nHome-use recommendations should account for age, swallowing ability, total fluoride exposure, and individual caries risk.",
+    exactPassage: "Professionally applied fluoride treatment should be based on caries-risk assessment, with higher-risk children receiving fluoride varnish at appropriate recall intervals.",
+    section: "Professional topical fluoride",
+    page: "Pages 352–358",
+    tags: ["Prevention", "Pediatric dentistry", "Fluoride"],
+    rights: {
+      holder: "American Academy of Pediatric Dentistry",
+      license: "Public professional guidance",
+      allowedUse: "Search, attributed excerpts, citation, external open",
+      hosting: "publisher-link",
+      retention: "Annual edition review",
+    },
+    registry: {
+      status: "ready",
+      owner: "Preventive care lead",
+      lastSync: "August 10, 2026",
+      recordCount: "1 document · 31 passages",
+    },
+  },
+  {
+    id: "practice-emergency",
+    title: "Northstar Dental Urgent Care and Trauma Protocol",
+    origin: "Practice files",
+    kind: "Practice protocol",
+    publisher: "Northstar Dental",
+    authors: ["Clinical governance committee"],
+    edition: "Version 4.2",
+    publicationDate: "2026-06-02",
+    identifier: "NSD-POL-UC-042",
+    jurisdiction: "Practice policy",
+    updatedAt: "June 2, 2026",
+    recency: "Updated 2 months ago",
+    access: {
+      student: citationOnlyAccess,
+      dentist: licensedAccess,
+      hygienist: licensedAccess,
+      reception: licensedAccess,
+    },
+    currentAccess: licensedAccess,
+    excerpt: "Avulsed primary teeth are not replanted. Reception staff should arrange same-day clinical triage, record time of injury, and avoid giving a definitive prognosis.",
+    fullText: "Use the urgent-care script to establish airway safety, uncontrolled bleeding, head injury symptoms, and time of injury.\n\nAvulsed primary teeth are not replanted. Reception staff should arrange same-day clinical triage, record time of injury, and avoid giving a definitive prognosis.\n\nClinical staff document soft-tissue findings, account for the tooth, and provide written follow-up instructions.",
+    exactPassage: "Avulsed primary teeth are not replanted. Reception staff should arrange same-day clinical triage, record time of injury, and avoid giving a definitive prognosis.",
+    section: "Trauma triage",
+    page: "Page 6",
+    tags: ["Practice", "Emergency", "Workflow"],
+    rights: {
+      holder: "Northstar Dental",
+      license: "Internal workforce license",
+      allowedUse: "Internal retrieval and watermarked preview",
+      hosting: "practice-hosted",
+      retention: "Current version plus seven-year audit history",
+    },
+    registry: {
+      status: "ready",
+      owner: "Clinical operations",
+      lastSync: "Today, 8:42 AM",
+      recordCount: "1 document · 24 passages",
+    },
+  },
+  {
+    id: "cdt-reference",
+    title: "CDT 2026 Dental Procedure Codes",
+    origin: "Licensed reference",
+    kind: "Code reference",
+    publisher: "American Dental Association",
+    authors: ["Code Maintenance Committee"],
+    edition: "CDT 2026",
+    publicationDate: "2025-09-01",
+    identifier: "ISBN 978-1-68447-247-5",
+    jurisdiction: "United States",
+    updatedAt: "September 1, 2025",
+    recency: "Current code year",
+    access: allRoles(citationOnlyAccess),
+    currentAccess: citationOnlyAccess,
+    excerpt: "",
+    fullText: "",
+    exactPassage: "",
+    section: "Preventive services",
+    page: "Publisher lookup required",
+    tags: ["Coding", "Administrative", "Licensed"],
+    rights: {
+      holder: "American Dental Association",
+      license: "Citation-only registry entry",
+      allowedUse: "Metadata and source identity only",
+      hosting: "metadata-only",
+      retention: "Metadata reviewed each code year",
+    },
+    registry: {
+      status: "review-needed",
+      owner: "Revenue cycle lead",
+      lastSync: "July 29, 2026",
+      recordCount: "Metadata only",
+    },
+  },
+  {
+    id: "benefit-handbook",
+    title: "Dental Benefits Verification Handbook",
+    origin: "Benefits workspace",
+    kind: "Administrative handbook",
+    publisher: "Northstar Dental",
+    authors: ["Revenue cycle team"],
+    edition: "Version 3.1",
+    publicationDate: "2026-04-18",
+    identifier: "NSD-RCM-BV-031",
+    jurisdiction: "Practice policy",
+    updatedAt: "April 18, 2026",
+    recency: "Updated 4 months ago",
+    access: {
+      student: lockedAccess,
+      dentist: lockedAccess,
+      hygienist: lockedAccess,
+      reception: entitledAccess,
+    },
+    currentAccess: lockedAccess,
+    excerpt: "Before quoting an estimate, verify active eligibility, benefit period, deductible, annual maximum, frequency limits, waiting periods, and whether predetermination is recommended.",
+    fullText: "Coverage information supports financial communication but does not determine clinical need.\n\nBefore quoting an estimate, verify active eligibility, benefit period, deductible, annual maximum, frequency limits, waiting periods, and whether predetermination is recommended.\n\nState that an estimate is not a guarantee of payment and document the verification date and channel.",
+    exactPassage: "Before quoting an estimate, verify active eligibility, benefit period, deductible, annual maximum, frequency limits, waiting periods, and whether predetermination is recommended.",
+    section: "Pre-service verification",
+    page: "Page 12",
+    tags: ["Benefits", "Estimate", "Scheduling"],
+    rights: {
+      holder: "Northstar Dental",
+      license: "Revenue cycle team access",
+      allowedUse: "Entitled internal retrieval and preview",
+      hosting: "practice-hosted",
+      retention: "Current version plus seven-year audit history",
+    },
+    registry: {
+      status: "ready",
+      owner: "Revenue cycle lead",
+      lastSync: "Today, 7:55 AM",
+      recordCount: "1 document · 39 passages",
+    },
   },
   {
     id: "patient-chart",
-    title: "Maya Chen — Clinical chart and periodontal measurements",
-    origin: "Open Dental",
+    title: "Patient clinical chart",
+    origin: "Practice management system",
     kind: "Patient record",
+    publisher: "Northstar Dental",
+    authors: ["Treating care team"],
+    edition: "Current chart",
+    publicationDate: "2026-07-28",
+    identifier: "Withheld until patient context is enabled",
+    jurisdiction: "Protected health information",
     updatedAt: "July 28, 2026",
     recency: "19 days old",
-    access: { dentist: access.entitled, frontDesk: access.excluded },
-    originalUrl: "https://example.com/synthetic-open-dental/patients/PT-1042",
-    excerpt: "Generalized 4–5 mm probing depths with localized 6 mm sites at #3 and #14. Bleeding on probing: 38%. Radiographic horizontal bone loss is consistent with Stage II periodontitis.",
-    section: "Periodontal chart — July 28, 2026",
+    access: {
+      student: excludedAccess,
+      dentist: entitledAccess,
+      hygienist: entitledAccess,
+      reception: excludedAccess,
+    },
+    currentAccess: entitledAccess,
+    excerpt: "Generalized 4–5 mm probing depths with localized 6 mm sites. Bleeding on probing is documented at 38%.",
+    fullText: "This synthetic chart content is available only to role-appropriate clinical users after patient context is explicitly enabled.\n\nGeneralized 4–5 mm probing depths with localized 6 mm sites. Additional clinical details remain within the entitled patient workflow.",
+    exactPassage: "Generalized 4–5 mm probing depths with localized 6 mm sites.",
+    section: "Periodontal chart",
+    page: "Clinical record",
     tags: ["Patient", "Restricted", "Clinical"],
-  },
-  {
-    id: "practice-protocol",
-    title: "Northstar Dental Periodontal Care Protocol",
-    origin: "Files",
-    kind: "Practice protocol",
-    updatedAt: "June 2, 2026",
-    recency: "2 months old",
-    access: { dentist: access.licensedPreview, frontDesk: access.licensedPreview },
-    excerpt: "Schedule periodontal re-evaluation 4–6 weeks after scaling and root planing. Document bleeding, pocket depth changes, plaque control, and the maintenance interval.",
-    section: "Post-treatment workflow",
-    tags: ["Practice", "Workflow"],
-  },
-  {
-    id: "benefit-summary",
-    title: "Delta Dental PPO — synthetic benefit summary",
-    origin: "Google Drive",
-    kind: "Benefit document",
-    updatedAt: "January 3, 2026",
-    recency: "7 months old",
-    access: { dentist: access.locked, frontDesk: access.entitled },
-    originalUrl: "https://example.com/synthetic-benefits/delta-dental-ppo",
-    excerpt: "Periodontal scaling and root planing is subject to plan frequency and quadrant limitations. Predetermination is recommended when estimated patient responsibility exceeds $300.",
-    section: "Periodontal services",
-    tags: ["Benefits", "Administrative"],
-  },
-  {
-    id: "antibiotic-note",
-    title: "Antibiotic Stewardship Chairside Note",
-    origin: "SharePoint",
-    kind: "Clinical note",
-    updatedAt: "November 8, 2023",
-    recency: "2 years 9 months old",
-    access: { dentist: access.entitled, frontDesk: access.citationOnly },
-    originalUrl: "https://example.com/synthetic-clinical-library/antibiotic-stewardship",
-    excerpt: "Systemic antibiotics are not routinely indicated as an adjunct to scaling and root planing. Use only for defined clinical indications after reviewing allergy history.",
-    section: "Periodontal prescribing",
-    tags: ["Medication", "Stewardship"],
+    rights: {
+      holder: "Northstar Dental",
+      license: "Treatment relationship and minimum-necessary access",
+      allowedUse: "Patient-specific clinical support only",
+      hosting: "practice-hosted",
+      retention: "Clinical retention policy",
+    },
+    registry: {
+      status: "blocked",
+      owner: "Privacy officer",
+      lastSync: "On demand",
+      recordCount: "Excluded from general assistant",
+    },
   },
 ];
 
-const prompts = {
-  periodontal: "What is the evidence-based next step for Maya's periodontal care?",
-  explain: "How should we explain the proposed treatment and timing to Maya?",
-  benefits: "What should we verify before scheduling the periodontal treatment?",
+const questions = {
+  trauma: "What should we do when a child knocks out a primary tooth?",
+  prophylaxis: "Who needs antibiotic prophylaxis before dental treatment?",
+  fluoride: "How should fluoride varnish recommendations vary by caries risk?",
+  estimate: "What should be checked before presenting a dental treatment estimate?",
+} as const;
+
+export const sampleQuestions = Object.values(questions);
+
+const answerText: Record<keyof typeof questions, Record<Persona, string[]>> = {
+  trauma: {
+    student: [
+      "Do not replant an avulsed primary tooth. First distinguish primary from permanent dentition, screen for other injuries, and arrange prompt dental assessment.",
+      "For study purposes, contrast that with permanent-tooth avulsion, where immediate replantation or suitable storage can be time-critical.",
+    ],
+    dentist: [
+      "Do not replant an avulsed primary tooth. Assess for soft-tissue injury, intrusion or aspiration concerns, occlusal injury, and possible effects on the permanent successor.",
+      "Provide analgesia and hygiene instructions as appropriate, document the injury, and arrange follow-up based on the examination.",
+    ],
+    hygienist: [
+      "Do not replant an avulsed primary tooth. Support urgent assessment, document the reported injury time and symptoms, and reinforce clinician-approved home-care and follow-up instructions.",
+      "Escalate airway concerns, uncontrolled bleeding, altered consciousness, or suspected head injury immediately.",
+    ],
+    reception: [
+      "Do not advise replanting a primary tooth. Arrange same-day clinical triage, record when the injury happened, and screen for emergency warning signs using the practice protocol.",
+      "Avoid giving a prognosis or clinical treatment plan; route those questions to the treating clinician.",
+    ],
+  },
+  prophylaxis: {
+    student: [
+      "Antibiotic prophylaxis is limited to specific high-risk cardiac conditions for procedures involving gingival manipulation, the periapical region, or oral mucosal perforation.",
+      "A prosthetic joint alone is not a routine indication. Learn the qualifying cardiac categories and confirm current guidance rather than memorizing broad historical rules.",
+    ],
+    dentist: [
+      "Consider prophylaxis only after confirming a highest-risk cardiac condition and that the planned procedure meets the procedural threshold.",
+      "Review the current medical history, allergy profile, regimen, and timing. Coordinate with the physician when the cardiac history or recommendation is unclear.",
+    ],
+    hygienist: [
+      "Before procedures that manipulate gingival tissue, verify whether a documented highest-risk cardiac condition is present and whether the dentist has confirmed prophylaxis.",
+      "Do not infer eligibility from a vague heart-history note or prosthetic joint alone; pause and escalate unclear histories.",
+    ],
+    reception: [
+      "Do not decide whether prophylaxis is needed. Collect the relevant medical-history update and any physician documentation, then route the decision to the clinical team.",
+      "When instructed, help the patient confirm prescription timing and appointment logistics without giving new medication advice.",
+    ],
+  },
+  fluoride: {
+    student: [
+      "Base professional fluoride on individual caries risk rather than age alone. Higher-risk patients generally need more intensive professional and home-prevention planning.",
+      "Consider disease activity, fluoride exposure, diet, oral hygiene, medical factors, and ability to use home products safely.",
+    ],
+    dentist: [
+      "Document caries risk and use it to set varnish frequency and the broader prevention plan. Higher-risk children generally need varnish at shorter recall intervals than low-risk children.",
+      "Reassess risk as conditions change and tailor home fluoride to age, swallowing ability, total exposure, and active disease.",
+    ],
+    hygienist: [
+      "Use the documented caries-risk assessment to guide varnish frequency, education, and recall recommendations. Reinforce toothpaste amount, supervision, diet, and adherence.",
+      "Update risk indicators at preventive visits and flag new lesions or exposure changes for the dentist.",
+    ],
+    reception: [
+      "Use the clinician’s documented fluoride and recall plan when scheduling. Do not assign a risk category or recommend a clinical frequency from the front desk.",
+      "You can explain that recommendations vary by cavity risk and direct clinical questions to the hygienist or dentist.",
+    ],
+  },
+  estimate: {
+    student: [
+      "Keep clinical need separate from coverage. A complete estimate workflow checks the treatment plan, coding source, eligibility, deductible, annual maximum, limitations, and authorization requirements.",
+      "The patient should be told that an estimate is not a guarantee of insurer payment.",
+    ],
+    dentist: [
+      "Confirm the clinical plan and documentation, then hand off benefit and fee verification to the entitled revenue-cycle role.",
+      "Do not change the clinical recommendation solely to match an unverified coverage assumption.",
+    ],
+    hygienist: [
+      "Confirm that recommended preventive or periodontal services are documented and that the care plan is clear before the estimate is prepared.",
+      "Route benefit interpretation and patient-responsibility calculations to the entitled administrative team.",
+    ],
+    reception: [
+      "Verify active eligibility, benefit period, deductible, annual maximum, frequency limits, waiting periods, network status, and predetermination requirements before presenting an estimate.",
+      "Document when and how benefits were checked, use current fees and approved codes, and state clearly that the estimate is not a guarantee of payment.",
+    ],
+  },
 };
 
-export const demoAnswers: DemoAnswer[] = [
-  {
-    id: "dentist-periodontal",
-    prompt: prompts.periodontal,
-    shortPrompt: "Recommend the next clinical step",
-    persona: "dentist",
-    answer: [
-      "Maya’s findings support nonsurgical periodontal therapy with scaling and root planing as the next clinical step. Her chart documents generalized 4–5 mm pockets, localized 6 mm sites, bleeding on probing, and bone loss consistent with Stage II periodontitis.",
-      "Plan a periodontal re-evaluation 4–6 weeks after treatment, measuring bleeding and pocket-depth response. Reinforce plaque control. Systemic antibiotics are not routinely indicated; her penicillin allergy should remain visible if a separate clinical indication arises.",
-    ],
-    citations: [
-      { sourceId: "ada-periodontal", label: "ADA guideline" },
-      { sourceId: "patient-chart", label: "Maya’s chart" },
-      { sourceId: "practice-protocol", label: "Practice protocol" },
-      { sourceId: "antibiotic-note", label: "Stewardship note" },
-    ],
+const questionSources: Record<keyof typeof questions, string[]> = {
+  trauma: ["iadt-trauma", "practice-emergency"],
+  prophylaxis: ["ada-prophylaxis"],
+  fluoride: ["aapd-fluoride"],
+  estimate: ["benefit-handbook", "cdt-reference"],
+};
+
+const roleLabel: Record<Persona, string> = {
+  student: "Dental student",
+  dentist: "Dentist",
+  hygienist: "Dental hygienist",
+  reception: "Reception",
+};
+
+const makeAnswer = (key: keyof typeof questions, persona: Persona): DemoAnswer => {
+  const sourceIds = questionSources[key].filter((id) => {
+    const source = sources.find((item) => item.id === id);
+    return source?.access[persona]?.retrieved;
+  });
+  const citationSources = sourceIds.map((id) => sources.find((source) => source.id === id)!);
+  return {
+    id: `${persona}-${key}`,
+    prompt: questions[key],
+    shortPrompt: questions[key],
+    persona,
+    answer: answerText[key][persona],
+    citations: citationSources.map((source) => ({
+      sourceId: source.id,
+      label: `${source.publisher} · ${source.edition}`,
+    })),
     claims: [
-      { claim: "Scaling and root planing is the appropriate initial treatment.", sourceIds: ["ada-periodontal", "patient-chart"], strength: "strong", recency: "Guideline updated 2025; chart updated 19 days ago" },
-      { claim: "Re-evaluate the periodontal response in 4–6 weeks.", sourceIds: ["practice-protocol", "ada-periodontal"], strength: "strong", recency: "Practice protocol updated 2 months ago" },
-      { claim: "Routine systemic antibiotics are not indicated.", sourceIds: ["antibiotic-note"], strength: "moderate", recency: "Source is nearly 3 years old", flag: "conflict", note: "The source is older than the practice’s preferred 24-month clinical window." },
+      {
+        claim: answerText[key][persona][0],
+        sourceIds,
+        strength: sourceIds.length > 1 ? "strong" : sourceIds.length === 1 ? "moderate" : "limited",
+        recency: citationSources.map((source) => source.recency).join(" · ") || "No entitled source retrieved",
+        flag: sourceIds.length === 0 ? "unsupported" : undefined,
+        note: sourceIds.length === 0 ? "This role is not entitled to retrieve the source text; the answer is limited to a safe handoff." : undefined,
+      },
     ],
-    researchSteps: ["Read the current periodontal guideline", "Matched Maya’s recent chart findings", "Checked the practice follow-up protocol", "Reviewed medication and allergy constraints"],
-  },
-  {
-    id: "frontdesk-periodontal",
-    prompt: prompts.periodontal,
-    shortPrompt: "Recommend the next clinical step",
-    persona: "frontDesk",
-    answer: [
-      "The accessible guideline supports initial nonsurgical periodontal treatment followed by re-evaluation. Clinical chart details are excluded from the front desk role, so this view cannot confirm patient-specific findings.",
-      "Route diagnosis and treatment questions to the treating dentist. Front desk staff can explain the follow-up workflow and coordinate benefits verification before scheduling.",
+    evidenceTrace: [
+      { stage: "scope", detail: `Applied the ${roleLabel[persona]} response scope`, result: "Role selected" },
+      { stage: "access", detail: `Checked ${questionSources[key].length} source policies before text retrieval`, result: `${sourceIds.length} retrievable` },
+      { stage: "retrieve", detail: "Loaded only passages allowed for this role", result: `${citationSources.length} passages` },
+      { stage: "rank", detail: "Matched the question to source section and exact passage", result: "Deterministic order" },
+      { stage: "compose", detail: "Separated clinical guidance, workflow, and access limits", result: "Citations attached" },
     ],
-    citations: [
-      { sourceId: "ada-periodontal", label: "ADA guideline" },
-      { sourceId: "practice-protocol", label: "Practice protocol" },
-    ],
-    claims: [
-      { claim: "The workflow includes treatment followed by re-evaluation.", sourceIds: ["ada-periodontal", "practice-protocol"], strength: "moderate", recency: "Sources updated in 2025–2026" },
-      { claim: "Maya’s chart supports the proposed treatment.", sourceIds: [], strength: "limited", recency: "Patient record excluded", flag: "unsupported", note: "This role cannot access the chart needed to verify the patient-specific claim." },
-    ],
-    researchSteps: ["Found citation metadata for the guideline", "Filtered the patient chart by role", "Read accessible workflow metadata", "Prepared an administrative handoff"],
-  },
-  {
-    id: "dentist-explain",
-    prompt: prompts.explain,
-    shortPrompt: "Explain treatment to the patient",
-    persona: "dentist",
-    answer: [
-      "Explain that the goal is to remove bacterial deposits below the gumline so inflamed tissues can heal. Maya’s measurements show areas that need more than routine cleaning. Treatment is followed by a focused healing check in 4–6 weeks.",
-      "Avoid promising a specific outcome. At re-evaluation, compare bleeding and pocket depths, review home care, and decide on the maintenance interval.",
-    ],
-    citations: [{ sourceId: "patient-chart", label: "Maya’s chart" }, { sourceId: "practice-protocol", label: "Practice protocol" }],
-    claims: [
-      { claim: "Maya has sites requiring periodontal rather than routine preventive care.", sourceIds: ["patient-chart"], strength: "strong", recency: "Chart updated 19 days ago" },
-      { claim: "A healing check should occur in 4–6 weeks.", sourceIds: ["practice-protocol"], strength: "strong", recency: "Protocol updated 2 months ago" },
-    ],
-    researchSteps: ["Reviewed Maya’s periodontal measurements", "Separated facts from patient-friendly language", "Checked the approved follow-up interval"],
-  },
-  {
-    id: "frontdesk-explain",
-    prompt: prompts.explain,
-    shortPrompt: "Explain treatment to the patient",
-    persona: "frontDesk",
-    answer: [
-      "Tell Maya that the dentist recommended a deeper gum treatment and a follow-up visit to check healing. Do not describe her clinical measurements from this role because the chart is excluded.",
-      "Offer to review appointment length, benefits estimates, and follow-up timing. Refer questions about diagnosis, alternatives, risks, or expected outcomes to the dentist.",
-    ],
-    citations: [{ sourceId: "practice-protocol", label: "Practice protocol" }],
-    claims: [
-      { claim: "A follow-up is normally scheduled 4–6 weeks after treatment.", sourceIds: ["practice-protocol"], strength: "moderate", recency: "Protocol updated 2 months ago" },
-      { claim: "The dentist has diagnosed Stage II periodontitis.", sourceIds: [], strength: "limited", recency: "Patient record excluded", flag: "unsupported", note: "Diagnosis details are intentionally unavailable to this role." },
-    ],
-    researchSteps: ["Filtered clinical details by role", "Read the scheduling portion of the practice protocol", "Separated administrative guidance from clinical counseling"],
-  },
-  {
-    id: "dentist-benefits",
-    prompt: prompts.benefits,
-    shortPrompt: "Check scheduling requirements",
-    persona: "dentist",
-    answer: [
-      "A benefits source is available, but this dentist persona is not entitled to retrieve its contents. I cannot state its coverage rules or estimate patient responsibility from this view.",
-      "Keep the clinical plan separate from the insurer’s coverage decision and ask the front desk benefits team to verify current coverage before scheduling.",
-    ],
-    citations: [],
-    claims: [{ claim: "Current plan requirements need verification by an entitled role.", sourceIds: [], strength: "limited", recency: "Restricted source was not retrieved", flag: "unsupported", note: "The access policy withheld the document before retrieval, so no coverage details are used in this answer." }],
-    researchSteps: ["Located the benefit document", "Applied dentist-role access controls", "Prepared a benefits-team handoff"],
-  },
-  {
-    id: "frontdesk-benefits",
-    prompt: prompts.benefits,
-    shortPrompt: "Check scheduling requirements",
-    persona: "frontDesk",
-    answer: [
-      "Verify frequency and quadrant limits for scaling and root planing, then request predetermination if estimated patient responsibility is above $300. Record that the estimate is not a guarantee of payment.",
-      "The benefit summary is seven months old, so confirm current eligibility and remaining benefits before giving Maya an estimate.",
-    ],
-    citations: [{ sourceId: "benefit-summary", label: "Benefit summary" }],
-    claims: [
-      { claim: "Predetermination is recommended above $300 estimated responsibility.", sourceIds: ["benefit-summary"], strength: "strong", recency: "Benefit summary updated 7 months ago" },
-      { claim: "Current eligibility still needs live verification.", sourceIds: ["benefit-summary"], strength: "moderate", recency: "Source is not real-time" },
-    ],
-    researchSteps: ["Opened the accessible benefit summary", "Checked frequency and quadrant guidance", "Flagged the non-real-time eligibility limitation"],
-  },
-];
+  };
+};
+
+export const demoAnswers: DemoAnswer[] = (Object.keys(questions) as Array<keyof typeof questions>)
+  .flatMap((key) => roles.map((persona) => makeAnswer(key, persona)));
+
+export const getAnswer = (persona: Persona, prompt: string) => {
+  const key = (Object.keys(questions) as Array<keyof typeof questions>)
+    .find((questionKey) => questions[questionKey] === prompt) ?? "trauma";
+  return makeAnswer(key, persona);
+};
 
 export const connectors: Connector[] = [
-  { id: "files", name: "Files", description: "Practice policies, consent templates, and chairside notes.", status: "connected", lastSync: "Today, 8:42 AM", accessSummary: "Inherited folder permissions", recordCount: "128 documents" },
-  { id: "sharepoint", name: "SharePoint", description: "Clinical guidelines and shared practice protocols.", status: "connected", lastSync: "Today, 8:35 AM", accessSummary: "2 role rules active", recordCount: "346 documents" },
-  { id: "drive", name: "Google Drive", description: "Benefits references and administrative resources.", status: "needs-attention", lastSync: "Yesterday, 4:10 PM", accessSummary: "1 folder needs review", recordCount: "74 documents" },
-  { id: "open-dental", name: "Open Dental", description: "Synthetic clinical charts and treatment history.", status: "demo", lastSync: "Demo snapshot: July 28", accessSummary: "Clinical roles only", recordCount: "24 synthetic patients" },
-  { id: "patient-context", name: "Synthetic patient context", description: "Safe fixture data used by the prototype showcase.", status: "demo", lastSync: "Bundled with app", accessSummary: "Persona-filtered fields", recordCount: "1 active patient" },
+  { id: "files", name: "Practice files", description: "Policies, consent templates, and clinical protocols.", status: "connected", lastSync: "Today, 8:42 AM", accessSummary: "Folder and role rules", recordCount: "128 documents" },
+  { id: "publisher", name: "Publisher links", description: "Guidelines and professional reference metadata.", status: "connected", lastSync: "Today, 8:35 AM", accessSummary: "Rights-aware passage cache", recordCount: "346 records" },
+  { id: "benefits", name: "Benefits workspace", description: "Entitled administrative guidance and verification scripts.", status: "needs-attention", lastSync: "Yesterday, 4:10 PM", accessSummary: "Reception role only", recordCount: "74 documents" },
+  { id: "patient-context", name: "Patient context", description: "Optional clinical context, disabled by default.", status: "demo", lastSync: "Loaded only when enabled", accessSummary: "Clinical roles only", recordCount: "No active patient" },
 ];
 
 export const auditEvents: AuditEvent[] = [
-  { id: "evt-1", action: "Answer generated", actor: "Dr. Elena Ruiz", target: "Maya Chen periodontal question", time: "Today, 9:14 AM", detail: "4 sources evaluated; 4 citations displayed.", outcome: "completed" },
-  { id: "evt-2", action: "Source excluded", actor: "Access policy", target: "Maya Chen clinical chart", time: "Today, 9:09 AM", detail: "Front desk persona cannot retrieve clinical chart content.", outcome: "filtered" },
-  { id: "evt-3", action: "Document opened", actor: "Jordan Lee", target: "Delta Dental PPO benefit summary", time: "Today, 9:08 AM", detail: "Full preview allowed through administrative role.", outcome: "allowed" },
-  { id: "evt-4", action: "Research completed", actor: "Dr. Elena Ruiz", target: "Periodontal treatment evidence", time: "Yesterday, 3:32 PM", detail: "Bounded to 5 indexed sources; no external search.", outcome: "completed" },
+  { id: "evt-1", action: "Answer generated", actor: "Dr. Elena Ruiz", target: "Antibiotic prophylaxis question", time: "Today, 9:14 AM", detail: "Role scope applied; one current source cited.", outcome: "completed" },
+  { id: "evt-2", action: "Source excluded", actor: "Access policy", target: "Patient clinical chart", time: "Today, 9:09 AM", detail: "General assistant request had no patient context.", outcome: "filtered" },
+  { id: "evt-3", action: "Document opened", actor: "Jordan Lee", target: "Benefits verification handbook", time: "Today, 9:08 AM", detail: "Entitlement verified for reception role.", outcome: "allowed" },
+  { id: "evt-4", action: "Evidence trace recorded", actor: "Dental Evidence", target: "Primary tooth avulsion answer", time: "Yesterday, 3:32 PM", detail: "Access was checked before two passages were ranked.", outcome: "completed" },
 ];
-
-export const getAnswer = (persona: Persona, prompt: string) =>
-  demoAnswers.find((answer) => answer.persona === persona && answer.prompt === prompt) ??
-  demoAnswers.find((answer) => answer.persona === persona && answer.prompt === prompts.periodontal)!;
-
-export const showcasePrompts = Object.values(prompts);

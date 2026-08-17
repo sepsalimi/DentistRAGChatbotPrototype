@@ -1,0 +1,6 @@
+# Excludes local environments and persisted content from container builds.
+.venv
+__pycache__
+.pytest_cache
+.dental_data
+tests

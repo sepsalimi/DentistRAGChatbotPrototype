@@ -1,41 +1,87 @@
 # Dental Evidence Chat
 
-A stakeholder-ready prototype for access-aware dental RAG. It combines a
-ChatGPT-style experience with claim-level citations, source previews, persona
-permissions, synthetic patient context, and a visible evidence trail.
+Dental Evidence Chat is a working prototype for governed dental RAG. It answers
+general questions for students, dentists, hygienists, and reception teams, with
+optional patient context for authorized clinical roles.
 
-The prototype contains no real patient data and is not clinical decision-making
-software.
+The differentiator is the source layer: documents have stable identities,
+explicit rights decisions, passage-level citations, and access-aware full
+previews instead of becoming anonymous files in a vector database.
 
-## What the demo shows
+The prototype contains no real patient data and is not clinical
+decision-making software.
 
-- Dentist and front-desk personas receive different answers and source access.
-- Inline citations open an in-app evidence panel.
-- "Why this answer" maps claims to sources, recency, conflicts, and unsupported
-  statements without exposing private model reasoning.
-- Source policies distinguish public, licensed in-app preview, citation-only,
-  entitlement-controlled, patient-restricted, and fully excluded material.
-- Excluded or unauthorized documents are filtered before their text is read,
-  ranked, embedded, or sent to a model.
-- Research mode shows a bounded evidence-review workflow.
-- Source settings demonstrate Files, SharePoint, Google Drive, Open Dental, and
-  synthetic patient-data connections.
-- Deterministic showcase answers work without an API key; unmatched questions
-  can use OpenAI with Qdrant-backed vector retrieval.
+## Product capabilities
 
-## Project structure
+- General dental chat across clinical care, prevention, education, coding, and
+  practice workflow.
+- Student, dentist, hygienist, and reception answer scopes.
+- Optional synthetic patient context for dentists and hygienists.
+- Real PDF/TXT upload with a rights decision before parsing or embedding.
+- Persistent SQLite source registry and local approved-file storage.
+- Lexical passage retrieval without an API key.
+- Optional OpenAI generation and persistent Qdrant vector retrieval.
+- Passage citations with publisher, document identity, edition, effective
+  date, section, page, exact quote, offsets, and PDF bounding boxes.
+- Full authorized TXT/PDF previews with the cited passage highlighted.
+- Evidence trace showing scope, authorization, retrieval, ranking, exclusions,
+  and claim-to-citation mapping without chain-of-thought.
 
-- `frontend/`: Next.js App Router and TypeScript interface.
-- `backend/`: FastAPI, policy engine, deterministic fixtures, LlamaIndex,
-  Qdrant local mode, OpenAI generation, and tests.
-- `.env.example`: shared local configuration.
+## Source registry
 
-## Run locally
+Every source records:
 
-The frontend requires a current Node.js release. The backend requires Python
-3.11 or newer.
+- Publisher and stable document identity
+- Edition, publication date, and effective date
+- Supersedes/superseded-by relationships
+- Applicability or jurisdiction
+- Access type: public, internal, licensed, restricted, or user-provided
+- AI usage rights: approved, unknown, or prohibited
+- Hosting permission and separate passage-storage permission
+- Allowed roles, required entitlement, and optional patient scope
+- Ingestion status and current request capabilities
 
-### Backend
+### Rights behavior
+
+- Approved + hosting permitted: retain the original, parse passages, index,
+  and allow authorized full-document preview.
+- Approved + hosting not permitted + passage storage permitted: parse/index
+  approved passages, discard the original, and link to the publisher.
+- Approved + no storage permission: retain metadata only.
+- Unknown: retain metadata for review; discard bytes; never parse or embed.
+- Prohibited: retain safe prohibition metadata; discard bytes; never parse or
+  embed.
+
+Superseded and future-effective sources remain visible in registry history but
+are excluded from normal retrieval.
+
+## Run the working prototype
+
+### Docker
+
+Docker Compose persists registry metadata, approved originals, passages, and
+Qdrant data in a named volume.
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+Open:
+
+- App: `http://localhost:3000`
+- API documentation: `http://localhost:8000/docs`
+
+Docker Desktop or an equivalent Compose runtime is required for this path.
+This workspace did not have Docker installed, so the stack is also verified
+through pytest, frontend tests, and the local FastAPI upload-to-citation flow.
+
+Offline lexical mode is the default. To enable vector retrieval, set
+`DENTAL_RAG_MODE=vector` and provide `OPENAI_API_KEY` in `.env`.
+
+### Manual setup
+
+Backend:
 
 ```bash
 cd backend
@@ -45,33 +91,42 @@ python -m pip install -e ".[test]"
 python -m uvicorn dental_evidence.main:app --reload
 ```
 
-The API starts at `http://localhost:8000`. Interactive API documentation is at
-`http://localhost:8000/docs`.
-
-### Frontend
+Frontend:
 
 ```bash
 cd frontend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
-Open `http://localhost:3000`.
+## Try the complete workflow
+
+1. Open Source Registry, then select Add source.
+2. Choose a PDF or UTF-8 TXT file.
+3. Enter publisher, document identity, edition, dates, applicability, and
+   supersession metadata.
+4. Set access type, AI usage rights, hosting permission, passage-storage
+   permission, roles, entitlement, and optional patient scope.
+5. Review the displayed rights decision before uploading.
+6. Ask an arbitrary question using distinctive words from the approved source.
+7. Open the citation to inspect its identity and rights metadata.
+8. Open the full authorized document at the cited page and highlighted passage.
+
+Use Unknown or Prohibited with a test file to demonstrate that only metadata is
+registered and the content never enters storage or retrieval.
 
 ## Retrieval modes
 
-Runtime mode is explicit; the backend never silently changes retrieval modes.
-
-### Offline stakeholder mode
+Offline mode:
 
 ```bash
 export DENTAL_RAG_MODE=offline
 ```
 
-This is the default. It uses authorization-first deterministic retrieval and
-showcase answers without external services.
+This performs deterministic authorization-first lexical passage retrieval and
+works without external services.
 
-### Live vector RAG
+Vector mode:
 
 ```bash
 export DENTAL_RAG_MODE=vector
@@ -80,31 +135,20 @@ export OPENAI_MODEL=gpt-4.1-mini
 export OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 ```
 
-Vector mode uses LlamaIndex with an in-memory Qdrant collection. Policy produces
-a user-specific allow-list before any document body is embedded, and Qdrant
-queries also filter by tenant, user, and policy version.
+Vector mode embeds approved passages into persistent local Qdrant, filters by
+tenant, role, entitlement, effective version, and patient context, then
+reauthorizes every search hit before generation.
 
-## Suggested demo flow
+## GitHub Pages
 
-1. Ask the first periodontal showcase question as the dentist.
-2. Open an inline citation and show the source preview and evidence mapping.
-3. Switch to the front-desk persona and point out the changed answer and
-   excluded patient chart.
-4. Open the access-impact section to compare permissions.
-5. Demonstrate public, licensed-preview, citation-only, entitled, and excluded
-   sources in the evidence panel.
-6. Enable Research mode to show bounded access-filtered evidence review.
-7. Visit Sources & settings and Audit activity.
-8. With the backend running, enter a custom question to demonstrate streamed
-   RAG and its authorization trace.
+The static guided demo is available at:
 
-Useful backend showcase questions include:
+https://sepsalimi.github.io/DentistRAGChatbotPrototype/
 
-- `What should we do after a tooth extraction?`
-- `What medications is patient Maya taking?`
-- `What is the front desk emergency referral SOP?`
-- `What is the implant maintenance protocol?`
-- `What does the evidence say about dry socket prevention?`
+GitHub Pages demonstrates roles, sample answers, citations, source rights,
+registry records, evidence traces, and preview behavior. Static hosting cannot
+run FastAPI, persist uploads, or call private OpenAI credentials, so real
+ingestion and arbitrary RAG questions require the local setup.
 
 ## Verification
 
@@ -115,16 +159,17 @@ cd backend
 .venv/bin/python -m pip check
 
 cd ../frontend
-npm run typecheck
-npm test
-npm run build
+bun run typecheck
+bun test
+# Next.js 16's Bun wrapper can fail page-data collection; use Node 22.
+node ./node_modules/next/dist/bin/next build
 ```
 
 ## Production boundaries
 
-This is intentionally a prototype. A production clinic deployment still needs
-real identity-provider integration, source-of-truth ACL synchronization,
-durable tenant isolation, encrypted storage, immutable audit retention, BAAs,
-vendor security review, access revocation handling, and clinical governance.
-The Open Dental, SharePoint, and Google Drive connections shown here are mocks;
-they make no external calls and store no PHI.
+A production clinic deployment still needs real identity-provider
+authentication, source-of-truth entitlement synchronization, encryption and
+key management, malware scanning, immutable audit retention, backup and
+deletion policies, BAAs, vendor review, and clinical governance. The current
+roles and patient context are synthetic identities for demonstrating policy
+behavior.

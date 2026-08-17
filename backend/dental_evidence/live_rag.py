@@ -1,4 +1,4 @@
-"""OpenAI generation for unmatched questions with a deterministic no-key mode."""
+"""Grounded OpenAI generation from authorized documents or registry passages."""
 
 import os
 
@@ -38,5 +38,33 @@ class LiveRagGenerator:
                 "State uncertainty and source conflicts plainly. Do not provide a diagnosis."
             ),
             input=f"Question: {question}\n\nAuthorized evidence:\n{context}",
+        )
+        return response.output_text, False
+
+    async def generate_from_passages(
+        self,
+        question: str,
+        passages: list[tuple[str, str, str]],
+    ) -> tuple[str, bool]:
+        """Generate strictly from authorized registry passage quotations."""
+
+        if not passages:
+            return "I could not find accessible evidence for that question.", True
+        if not self.api_key:
+            return " ".join(passage[2] for passage in passages[:3]), True
+
+        context = "\n\n".join(
+            f"[{passage_id}] {title}\n{exact_quote}"
+            for passage_id, title, exact_quote in passages
+        )
+        client = AsyncOpenAI(api_key=self.api_key)
+        response = await client.responses.create(
+            model=self.model,
+            instructions=(
+                "Answer only from the supplied authorized dental passages. "
+                "Do not add unsupported facts or diagnosis. If evidence is insufficient, "
+                "say so explicitly."
+            ),
+            input=f"Question: {question}\n\nAuthorized passages:\n{context}",
         )
         return response.output_text, False

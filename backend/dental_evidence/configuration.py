@@ -1,7 +1,8 @@
-"""Explicit offline or live-vector runtime configuration from environment variables."""
+"""Explicit retrieval mode, model, and persistent backend storage configuration."""
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
 from .schemas import RetrievalMode
 
@@ -14,6 +15,7 @@ class BackendSettings:
     openai_api_key: str | None
     openai_model: str
     openai_embedding_model: str
+    data_directory: Path
 
     @classmethod
     def from_environment(cls) -> "BackendSettings":
@@ -38,5 +40,11 @@ class BackendSettings:
             openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
             openai_embedding_model=os.getenv(
                 "OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"
+            ),
+            data_directory=Path(
+                os.getenv(
+                    "DENTAL_DATA_DIR",
+                    str(Path(__file__).resolve().parent.parent / ".dental_data"),
+                )
             ),
         )

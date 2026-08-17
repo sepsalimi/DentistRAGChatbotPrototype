@@ -1,0 +1,5 @@
+# Excludes local build products from the frontend container context.
+node_modules
+.next
+out
+*.tsbuildinfo

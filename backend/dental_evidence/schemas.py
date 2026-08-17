@@ -7,7 +7,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class PersonaKind(StrEnum):
+    STUDENT = "student"
     DENTIST = "dentist"
+    HYGIENIST = "hygienist"
+    RECEPTION = "reception"
     FRONT_DESK = "front_desk"
 
 
@@ -139,11 +142,26 @@ class Citation(BaseModel):
     id: str
     document_id: str
     title: str
-    published_at: date
+    published_at: date | None
     source_uri: str | None
     preview_state: PreviewState
-    access_policy: AccessPolicy
+    access_policy: AccessPolicy | None = None
     capabilities: PermissionCapabilities
+    passage_id: str | None = None
+    publisher: str | None = None
+    document_identity: str | None = None
+    edition: str | None = None
+    effective_date: date | None = None
+    page_number: int | None = None
+    section: str | None = None
+    exact_quote: str | None = None
+    start_offset: int | None = None
+    end_offset: int | None = None
+    pdf_bbox: list[float] | None = None
+    access_type: str | None = None
+    source_access_action: str | None = None
+    source_access_url: str | None = None
+    media_type: str | None = None
 
 
 class SourceAccess(BaseModel):
@@ -192,6 +210,7 @@ class ChatRequest(BaseModel):
 
     user_id: str
     question: str = Field(min_length=1, max_length=2000)
+    patient_context_id: str | None = None
 
 
 class Connector(BaseModel):
@@ -228,6 +247,11 @@ class RetrievalTrace(BaseModel):
     authorized_document_ids: list[str]
     ranked_document_ids: list[str]
     mode: RetrievalMode
+    registry_candidate_source_ids: list[str] = Field(default_factory=list)
+    registry_candidate_passage_ids: list[str] = Field(default_factory=list)
+    registry_authorized_passage_ids: list[str] = Field(default_factory=list)
+    registry_ranked_passage_ids: list[str] = Field(default_factory=list)
+    registry_exclusion_reasons: dict[str, str] = Field(default_factory=dict)
 
 
 class ChatResult(BaseModel):

@@ -1,4 +1,4 @@
-// Combines five-scenario source navigation, previews, and evidence inspection.
+// Combines entitlement-aware citation cards, document previews, and evidence inspection.
 "use client";
 
 import type { DemoAnswer, EvidenceSource, Persona } from "@/lib/types";
@@ -53,16 +53,31 @@ export function SourcePanel({
           Sources <span>{answer.citations.length}</span>
         </button>
         <button className={tab === "evidence" ? "active" : ""} onClick={() => onTabChange("evidence")} type="button">
-          Why this answer
+          Evidence trace
         </button>
       </div>
       {tab === "sources" ? (
         <div className="panel-scroll">
           <div className="source-list">
-            {sources.map((source) => {
+            {[...sources].sort((left, right) => {
+              const leftCited = answer.citations.some((citation) => citation.sourceId === left.id);
+              const rightCited = answer.citations.some((citation) => citation.sourceId === right.id);
+              return Number(rightCited) - Number(leftCited);
+            }).map((source) => {
               const cited = answer.citations.some((citation) => citation.sourceId === source.id);
-              const policy = source.access[persona];
+              const policy = source.access[persona] ?? source.currentAccess;
               const excluded = policy.scenario === "excluded";
+              const accessAction = source.sourceAccessAction ?? (
+                policy.entitlement === "not-entitled"
+                  ? "Request entitlement"
+                  : policy.preview === "metadata-only"
+                    ? "Citation metadata"
+                    : policy.preview === "watermarked"
+                      ? "Licensed preview"
+                      : policy.original === "open"
+                        ? "Preview and original"
+                        : "Source details"
+              );
               return (
                 <button
                   className={selectedSource?.id === source.id ? "selected" : ""}
@@ -74,11 +89,15 @@ export function SourcePanel({
                     {excluded ? "Excluded" : cited ? "Cited" : "Available"}
                   </span>
                   <strong>{excluded ? "Restricted source excluded" : source.title}</strong>
-                  <small>
-                    {excluded
-                      ? "Details withheld · not retrieved"
-                      : `${source.origin} · ${policy.scenario.replace("-", " ")}`}
-                  </small>
+                  {excluded ? (
+                    <small>Details withheld · not retrieved</small>
+                  ) : (
+                    <>
+                      <small>{source.publisher} · {source.edition}</small>
+                      <small>{source.section} · {source.page}</small>
+                      <span className="source-card-action">{accessAction}</span>
+                    </>
+                  )}
                 </button>
               );
             })}

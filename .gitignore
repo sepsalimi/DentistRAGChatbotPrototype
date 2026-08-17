@@ -25,6 +25,7 @@ next-env.d.ts
 # Local application data
 backend/.qdrant/
 backend/data/
+backend/.dental_data/
 
 # Editor and OS artifacts
 .idea/

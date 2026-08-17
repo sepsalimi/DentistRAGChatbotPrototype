@@ -15,7 +15,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Link>
         <nav aria-label="Primary navigation">
           <Link href="/">Chat</Link>
-          <Link href="/settings/sources">Sources & settings</Link>
+          <Link href="/settings/sources">Source Registry</Link>
           <Link href="/audit">Audit activity</Link>
         </nav>
         <div className="practice-name">

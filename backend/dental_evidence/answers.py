@@ -1,4 +1,4 @@
-"""Deterministic showcase answers and grounded live-RAG answer assembly."""
+"""Deterministic sample answers and grounded live-RAG answer assembly."""
 
 from collections.abc import Sequence
 
@@ -15,7 +15,7 @@ from .schemas import (
 
 
 class AnswerService:
-    """Resolve showcase questions exactly and delegate unmatched questions."""
+    """Resolve sample questions exactly and delegate unmatched questions."""
 
     def __init__(self, permissions: PermissionService, live_rag: LiveRagGenerator) -> None:
         self.permissions = permissions

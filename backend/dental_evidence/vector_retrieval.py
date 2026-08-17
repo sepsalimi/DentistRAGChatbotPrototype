@@ -1,5 +1,7 @@
-"""LlamaIndex ingestion and Qdrant local vector retrieval over authorized evidence only."""
+"""Persistent local Qdrant retrieval over authorization-filtered evidence bodies."""
 
+import hashlib
+from pathlib import Path
 from uuid import uuid4
 
 from llama_index.core import Document, StorageContext, VectorStoreIndex
@@ -28,6 +30,7 @@ class AuthorizationFirstVectorRetriever:
         api_key: str | None,
         embedding_model: str,
         embed_model: BaseEmbedding | None = None,
+        qdrant_path: Path | None = None,
     ) -> None:
         if not api_key and embed_model is None:
             raise ValueError("Vector retrieval requires an OpenAI API key")
@@ -37,12 +40,28 @@ class AuthorizationFirstVectorRetriever:
             api_key=api_key,
             model=embedding_model,
         )
+        self.qdrant_path = qdrant_path
+        self._persistent_client = None
+        if qdrant_path is not None:
+            qdrant_path.mkdir(parents=True, exist_ok=True)
+            self._persistent_client = QdrantClient(path=str(qdrant_path))
 
-    def retrieve(self, user: User, question: str, limit: int = 5) -> RetrievalResult:
+    def retrieve(
+        self,
+        user: User,
+        question: str,
+        limit: int = 5,
+        patient_context_id: str | None = None,
+    ) -> RetrievalResult:
         tenant_metadata = [
             metadata
             for metadata in self.repository.list_metadata()
             if metadata.tenant_id == user.tenant_id
+            and (
+                metadata.subject_id is None
+                or patient_context_id is None
+                or metadata.subject_id == patient_context_id
+            )
         ]
         decisions = [self.permissions.decide(user, metadata) for metadata in tenant_metadata]
         authorized_ids = [
@@ -87,10 +106,17 @@ class AuthorizationFirstVectorRetriever:
             )
             for record in records
         ]
-        client = QdrantClient(location=":memory:")
+        client = self._persistent_client or QdrantClient(location=":memory:")
+        if self._persistent_client is None:
+            collection_name = f"authorized_{uuid4().hex}"
+        else:
+            scope = hashlib.sha256(
+                f"{user.tenant_id}:{user.id}:{POLICY_VERSION}".encode()
+            ).hexdigest()[:24]
+            collection_name = f"authorized_{scope}"
         vector_store = QdrantVectorStore(
             client=client,
-            collection_name=f"authorized_{uuid4().hex}",
+            collection_name=collection_name,
         )
         storage_context = StorageContext.from_defaults(vector_store=vector_store)
         index = VectorStoreIndex.from_documents(

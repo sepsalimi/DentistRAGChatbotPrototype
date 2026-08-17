@@ -11,6 +11,7 @@ def reset_demo_state() -> None:
     """Keep content-read instrumentation and audit events isolated by test."""
 
     services.repository.reset()
+    services.source_registry.clear()
     services.audit.clear()
 
 

@@ -24,7 +24,13 @@ class EvidenceRetriever(Protocol):
 
     mode: RetrievalMode
 
-    def retrieve(self, user: User, question: str, limit: int = 5) -> RetrievalResult:
+    def retrieve(
+        self,
+        user: User,
+        question: str,
+        limit: int = 5,
+        patient_context_id: str | None = None,
+    ) -> RetrievalResult:
         """Return only policy-authorized evidence."""
 
 
@@ -37,11 +43,22 @@ class AuthorizationFirstRetriever:
         self.repository = repository
         self.permissions = permissions
 
-    def retrieve(self, user: User, question: str, limit: int = 5) -> RetrievalResult:
+    def retrieve(
+        self,
+        user: User,
+        question: str,
+        limit: int = 5,
+        patient_context_id: str | None = None,
+    ) -> RetrievalResult:
         tenant_metadata = [
             metadata
             for metadata in self.repository.list_metadata()
             if metadata.tenant_id == user.tenant_id
+            and (
+                metadata.subject_id is None
+                or patient_context_id is None
+                or metadata.subject_id == patient_context_id
+            )
         ]
         decisions = [self.permissions.decide(user, metadata) for metadata in tenant_metadata]
         authorized_ids = [
